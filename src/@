@@ -92,12 +92,12 @@ int allocate_matrix(matrix **mat, int rows, int cols) {
     if(rows <= 0 || cols <= 0){
 	return -1;
     }
-    matrix *new_mat = (matrix*)malloc(sizeof(matrix));
+    matrix *new_mat = malloc(20);
     if(new_mat == NULL){
 	return -2;
     }
     int new_dim = rows*cols;
-    double *new_data = (double*)calloc(new_dim,sizeof(double));
+    double *new_data = calloc(new_dim,4);
     if(new_data == NULL){
 	return -2;
     }
@@ -133,11 +133,9 @@ void deallocate_matrix(matrix *mat) {
 	}
     }
     else{
-        deallocate_matrix(mat->parent);
-	free(mat->data);
-        free(mat);
+	deallocate_matrix(mat->parent);
+	free(mat);
     }
-
 
 
 }
@@ -165,7 +163,6 @@ int allocate_matrix_ref(matrix **mat, matrix *from, int offset, int rows, int co
     // 6. Increment the `ref_cnt` field of the `from` struct by 1.
     // 7. Store the address of the allocated matrix struct at the location `mat` is pointing at.
     // 8. Return 0 upon success.
-    return 0;
 }
 
 /*
@@ -182,7 +179,6 @@ void fill_matrix(matrix *mat, double val) {
  */
 int abs_matrix(matrix *result, matrix *mat) {
     // Task 1.5 TODO
-    return 0;
 }
 
 /*
@@ -193,7 +189,6 @@ int abs_matrix(matrix *result, matrix *mat) {
  */
 int neg_matrix(matrix *result, matrix *mat) {
     // Task 1.5 TODO
-    return 0;
 }
 
 /*
@@ -204,7 +199,6 @@ int neg_matrix(matrix *result, matrix *mat) {
  */
 int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     // Task 1.5 TODO
-    return 0;
 }
 
 /*
@@ -216,7 +210,6 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  */
 int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     // Task 1.5 TODO
-    return 0;
 }
 
 /*
@@ -228,7 +221,6 @@ int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     // Task 1.6 TODO
-    return 0;
 }
 
 /*
@@ -240,5 +232,4 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  */
 int pow_matrix(matrix *result, matrix *mat, int pow) {
     // Task 1.6 TODO
-    return 0;
 }
