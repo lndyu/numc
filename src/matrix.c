@@ -180,8 +180,12 @@ int allocate_matrix_ref(matrix **mat, matrix *from, int offset, int rows, int co
 void fill_matrix(matrix *mat, double val) {
     // Task 1.5 TODO
     int matrix_size = mat->rows * mat->cols;
-    for(int i = 0; i < matrix_size; i++){
-	mat->data[i] = val;
+    #pragma omp parallel
+    {
+	#pragma omp for
+        for(int i = 0; i < matrix_size; i++){
+	    mat->data[i] = val;
+        }
     }
 }
 
@@ -193,8 +197,12 @@ void fill_matrix(matrix *mat, double val) {
 int abs_matrix(matrix *result, matrix *mat) {
     // Task 1.5 TODO
     int matrix_size = mat->rows * mat->cols;
-    for(int i = 0; i< matrix_size;i++){
-	result->data[i] = fabs(mat->data[i]);
+    #pragma omp parallel
+    {
+	#pragma omp for
+        for(int i = 0; i< matrix_size;i++){
+	    result->data[i] = fabs(mat->data[i]);
+        }
     }
     return 0;
 }
@@ -219,8 +227,12 @@ int neg_matrix(matrix *result, matrix *mat) {
 int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     // Task 1.5 TODO
     int matrix_size = mat1->rows * mat1->cols;
-    for(int i = 0; i<matrix_size;i++){
-	result->data[i] = mat1->data[i] + mat2->data[i];	    
+    #pragma omp parallel
+    {
+	#pragma omp for
+        for(int i = 0; i<matrix_size;i++){
+	    result->data[i] = mat1->data[i] + mat2->data[i];	    
+        }
     }
     return 0;
 }
@@ -249,14 +261,18 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     int cols1 = mat1->cols;
     int cols = mat2->cols;
     int rows = mat1->rows;
-    for(int x = 0; x < cols;x++){
-	for(int y = 0; y<rows;y++){
-	    double dot_prod = 0;
-	    for(int i = 0; i < mat1->cols; i++){
-		dot_prod += mat1->data[y*cols1+i] * mat2->data[x+i*cols];
+    #pragma omp parallel
+    {
+	#pragma omp for
+        for(int x = 0; x < cols;x++){
+	    for(int y = 0; y<rows;y++){
+	        double dot_prod = 0;
+	        for(int i = 0; i < mat1->cols; i++){
+		    dot_prod += mat1->data[y*cols1+i] * mat2->data[x+i*cols];
+	        }
+	        result->data[x+y*cols] = dot_prod;
 	    }
-	    result->data[x+y*cols] = dot_prod;
-	}
+        }
     }
     return 0;
 }
