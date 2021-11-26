@@ -194,7 +194,7 @@ int abs_matrix(matrix *result, matrix *mat) {
     // Task 1.5 TODO
     int matrix_size = mat->rows * mat->cols;
     for(int i = 0; i< matrix_size;i++){
-	result->data[i] = abs(mat->data[i]);
+	result->data[i] = fabs(mat->data[i]);
     }
     return 0;
 }
