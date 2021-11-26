@@ -261,10 +261,10 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     int cols1 = mat1->cols;
     int cols = mat2->cols;
     int rows = mat1->rows;
+    #pragma omp parallel
+    {
+	#pragma omp for
         for(int x = 0; x < cols;x++){
-	    #pragma omp parallel
-	    {
-	    #pragma omp for
 	    for(int y = 0; y<rows;y++){
 		double dot_prod = 0;
 	        for(int i = 0; i < mat1->cols; i++){
@@ -272,8 +272,8 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 		}
 	        result->data[x+y*cols] = dot_prod;
 	    }
-	    }
         }
+    }
     return 0;
 }
 
