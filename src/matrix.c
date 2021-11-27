@@ -273,20 +273,22 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 	    }
 	}
     }
-
-    #pragma omp parallel
-    {
-	#pragma omp for
         for(int y = 0; y < rows;y++){
 	    for(int x = 0; x<cols;x++){
-		double dot_prod = 0;
+		    double dot_prod = 0;
+#pragma omp parallel
+		    {
+		double current_prod = 0;
+#pragma omp for
 	        for(int i = 0; i < mat1->cols; i++){
-		    dot_prod += mat1->data[y*cols1+i] * trans_mat->data[i+x*mat2->rows];
+		    current_prod += mat1->data[y*cols1+i] * trans_mat->data[i+x*mat2->rows];
 		}
+#pragma omp critical
+		dot_prod += current_prod;
+		    }
 	        result->data[x+y*cols] = dot_prod;
-	    }
-        }
-    }
+		    }
+       }
     free(trans_mat);
     return 0;
 }
