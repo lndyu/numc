@@ -326,22 +326,22 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 	current *= 2;
 	mul_matrix(temp_mat,result,result);
 #pragma omp parallel
-	{
-#pragma omp for
+    {
+	#pragma omp for
 	for(int i = 0; i<mat->rows*mat->cols;i++){
 	    result->data[i] = temp_mat->data[i];
 	}
-	}
     }
-#pragma omp parallel
-    {
-#pragma omp for
+    }
     for(int i = current;i<pow;i++){
 	mul_matrix(temp_mat,mat,result);
+#pragma omp parallel
+	{
+#pragma omp for
 	for(int j = 0; j < mat->rows * mat-> cols;j++){
 	    result->data[j] = temp_mat->data[j];
 	}
-    }
+	}
     }
     free(temp_mat);
     return 0;
