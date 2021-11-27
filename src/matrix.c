@@ -307,6 +307,17 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
     for(int i = 0; i < result->cols; i++){
 	result->data[i+i*result->cols] = 1;
     }
+    if(pow == 0){
+	return 0;
+    }
+    int current = 1;
+    while(current * 2 <= pow){
+	current *= 2;
+	mul_matrix(temp_mat,result,result);
+	for(int i = 0; i<mat->rows*mat->cols;i++){
+	    result->data[i] = temp_mat->data[i];
+	}
+    }
     for(int i = 0;i<pow;i++){
 	mul_matrix(temp_mat,mat,result);
 	for(int j = 0; j < mat->rows * mat-> cols;j++){
