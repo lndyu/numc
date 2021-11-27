@@ -311,6 +311,9 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 	return 0;
     }
     int current = 1;
+    for(int i = 0; i < mat->rows*mat->cols;i++){
+	result->data[i] = mat->data[i];
+    }
     while(current * 2 <= pow){
 	current *= 2;
 	mul_matrix(temp_mat,result,result);
@@ -318,7 +321,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 	    result->data[i] = temp_mat->data[i];
 	}
     }
-    for(int i = 0;i<pow;i++){
+    for(int i = current;i<pow;i++){
 	mul_matrix(temp_mat,mat,result);
 	for(int j = 0; j < mat->rows * mat-> cols;j++){
 	    result->data[j] = temp_mat->data[j];
