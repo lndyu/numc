@@ -268,55 +268,46 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     {
 #pragma omp for
     for(int i = 0; i < mat1->rows;i++){
-	//printf("MAT1 Row ");
-	//printf("%d",i);
-	//printf(" ");
 	for(int j = 0; j < mat1->cols;j++){
 	    mat1_array[i][j] = mat1->data[j+i*mat1->cols];
-	    //printf("%f",mat1_array[i][j]);
-	    //printf(" ");
 	}
     }
     }
-#pragma omp parallel
+    #pragma omp parallel
     {
-#pragma omp for
+	#pragma omp for
 	for(int i = 0; i < mat2->cols;i++){
-	    //printf("MAT2 Row ");
-	    //printf("%d",i);
-	    //printf(" ");
 	    for(int j = 0; j<mat2->rows;j++){
-		mat2_array[i][j] = mat2->data[i+j*mat2->cols];
-		//printf("%f",mat2_array[i][j]);
-		//printf(" ");
+		mat2_array[j][i] = mat2->data[j+i*mat2->cols];
 	    }
 	}
     }
     double current_products[4];
+
 #pragma omp parallel
     {
-#pragma omp for 
+#pragma omp for
         for(int y = 0; y < mat1->rows;y++){
 	    for(int x = 0; x<mat2->cols;x++){
 		double dot_prod = 0;
 		int current = 0;
-		while(current + 4 < mat1->cols){
-		    __m256d m1 = _mm256_loadu_pd(mat1_array[y] + current);
-		    __m256d m2 = _mm256_loadu_pd(mat2_array[x] + current);
+		while(current < mat1->cols){
+		    __m256d m1 = _mm256_loadu_pd(&mat1_array[y][current]);
+		    __m256d m2 = _mm256_loadu_pd(&mat2_array[x][current]);
 		    __m256d products = _mm256_mul_pd(m1,m2);
 		    _mm256_storeu_pd(current_products,products);
 		    dot_prod += (current_products[0] + current_products[1] + current_products[2] + current_products[3]);
-		    //printf("simd used");
 		    current += 4;
 		}
+		current -= 4;
 		while(current < mat1->cols){
 		    dot_prod += mat1_array[y][current] * mat2_array[x][current];
 		    current++;
 		}
 		//printf("%f",dot_prod);
-	        result->data[x+y*mat2->cols] = dot_prod;
+	        result->data[x+y*cols] = dot_prod;
 	}
-    }
+       }
     }
     return 0;
 }
