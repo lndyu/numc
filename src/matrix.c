@@ -296,19 +296,20 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     {
 #pragma omp for 
         for(int y = 0; y < mat1->rows;y++){
-	    double current_products[4];
+	    __m256d products = _mm256_set_pd(0,0,0,0);
 	    for(int x = 0; x<mat2->cols;x++){
 		double dot_prod = 0;
 		int current = 0;
 		while(current + 4 < mat1->cols){
 		    __m256d m1 = _mm256_loadu_pd(mat1_array[y] + current);
 		    __m256d m2 = _mm256_loadu_pd(mat2_array[x] + current);
-		    __m256d products = _mm256_mul_pd(m1,m2);
-		    _mm256_storeu_pd(current_products,products);
-		    dot_prod += (current_products[0] + current_products[1] + current_products[2] + current_products[3]);
+		    __m256d products = _mm256_fmadd_pd(m1,m2,products);
 		    //printf("simd used");
 		    current += 4;
 		}
+		double results[4];
+		_mm256_storeu_pd(results,products);
+		dot_prod += (results[0] + results[1] + results[2] + results[3]);
 		while(current < mat1->cols){
 		    dot_prod += mat1_array[y][current] * mat2_array[x][current];
 		    current++;
