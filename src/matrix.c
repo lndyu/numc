@@ -292,11 +292,11 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 	    }
 	}
     }
-    double current_products[4];
 #pragma omp parallel
     {
 #pragma omp for 
         for(int y = 0; y < mat1->rows;y++){
+	    double current_products[4];
 	    for(int x = 0; x<mat2->cols;x++){
 		double dot_prod = 0;
 		int current = 0;
