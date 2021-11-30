@@ -296,8 +296,8 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     {
 #pragma omp for 
         for(int y = 0; y < mat1->rows;y++){
-	    __m256d products = _mm256_set_pd(0,0,0,0);
 	    for(int x = 0; x<mat2->cols;x++){
+		__m256d products = _mm256_set_pd(0,0,0,0);
 		double dot_prod = 0;
 		int current = 0;
 		while(current + 4 < mat1->cols){
