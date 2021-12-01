@@ -324,8 +324,17 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
     // Task 1.6 TODO
     matrix *temp_mat;
     allocate_matrix(&temp_mat,result->cols,result->rows);
+    matrix *c;
+    allocate_matrix(&c,result->cols,result->rows);
     fill_matrix(temp_mat,0);
     fill_matrix(result,0);
+#pragma omp parallel
+    {
+#pragma omp for
+	for(int i = 0; i<result->cols*result->rows;i++){
+	    c->data[i] = mat->data[i];
+	}
+    }
 #pragma omp parallel
     {
 #pragma omp for
@@ -333,40 +342,26 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 	result->data[i+i*result->cols] = 1;
     }
     }
-    if(pow == 0){
-	return 0;
-    }
-    int current = 1;
+    while(pow > 0){
+	if(pow%2==1){
+	    pow -= 1;
+	    mul_matrix(temp_mat,result,c);
 #pragma omp parallel
-    {
+	    {
 #pragma omp for
-    for(int i = 0; i < mat->rows*mat->cols;i++){
-	result->data[i] = mat->data[i];
-    }
-    }
-    while(current * 2 <= pow){
-	current *= 2;
-	mul_matrix(temp_mat,result,result);
+	    for(int i = 0; i<mat->rows*mat->cols;i++){result->data[i] = temp_mat->data[i];}}}
+
+	mul_matrix(temp_mat,c,c);
 #pragma omp parallel
     {
 	#pragma omp for
 	for(int i = 0; i<mat->rows*mat->cols;i++){
-	    result->data[i] = temp_mat->data[i];
+	    c->data[i] = temp_mat->data[i];
 	}
     }
+    pow = pow / 2;
     }
-    matrix *tail_mat;
-    allocate_matrix(&tail_mat,result->cols,result->rows);
-    pow_matrix(tail_mat,mat,pow-current);
-    mul_matrix(temp_mat,result,tail_mat);
-#pragma omp parallel
-	{
-#pragma omp for
-	for(int j = 0; j < mat->rows * mat-> cols;j++){
-	    result->data[j] = temp_mat->data[j];
-	}
-	}
     deallocate_matrix(temp_mat);
-    deallocate_matrix(tail_mat);
+    deallocate_matrix(c);
     return 0;
 }
