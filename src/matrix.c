@@ -258,60 +258,41 @@ int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     // Task 1.6 TODO
-    int cols1 = mat1->cols;
-    int cols = mat2->cols;
-    int rows = mat1->rows;
     //transpose second matrix
-    double mat1_array[mat1->rows][mat1->cols];
-    double mat2_array[mat2->cols][mat2->rows];
+    matrix *transposed;
+    allocate_matrix(&transposed,mat2->cols,mat2->rows);
 #pragma omp parallel
     {
 #pragma omp for
-    for(int i = 0; i < mat1->rows;i++){
-	//printf("MAT1 Row ");
-	//printf("%d",i);
-	//printf(" ");
-	for(int j = 0; j < mat1->cols;j++){
-	    mat1_array[i][j] = mat1->data[j+i*mat1->cols];
-	    //printf("%f",mat1_array[i][j]);
-	    //printf(" ");
+    for(int i = 0; i < transposed->rows;i++){
+	for(int j = 0; j < transposed->cols;j++){
+	    transposed->data[j+i*transposed->cols] = mat2->data[i+j*mat2->cols];
 	}
     }
     }
 #pragma omp parallel
     {
 #pragma omp for
-	for(int i = 0; i < mat2->cols;i++){
-	    //printf("MAT2 Row ");
-	    //printf("%d",i);
-	    //printf(" ");
-	    for(int j = 0; j<mat2->rows;j++){
-		mat2_array[i][j] = mat2->data[i+j*mat2->cols];
-		//printf("%f",mat2_array[i][j]);
-		//printf(" ");
-	    }
-	}
-    }
-#pragma omp parallel
-    {
-#pragma omp for 
         for(int y = 0; y < mat1->rows;y++){
-	    for(int x = 0; x<mat2->cols;x++){
-		__m256d products = _mm256_set_pd(0,0,0,0);
+	    for(int x = 0; x<transposed->rows;x++){
+		__m256d products = _mm256_set1_pd(0.0);
 		double dot_prod = 0;
 		int current = 0;
+		__m256d m1;
+		__m256d m2;
 		while(current + 4 < mat1->cols){
-		    __m256d m1 = _mm256_loadu_pd(mat1_array[y] + current);
-		    __m256d m2 = _mm256_loadu_pd(mat2_array[x] + current);
-		    __m256d products = _mm256_fmadd_pd(m1,m2,products);
+		    m1 = _mm256_loadu_pd(mat1->data + y*mat1->cols + current);
+		    m2 = _mm256_loadu_pd(transposed->data + x*transposed->cols + current);
+		    products = _mm256_fmadd_pd(m1,m2,products);
 		    //printf("simd used");
 		    current += 4;
 		}
 		double results[4];
 		_mm256_storeu_pd(results,products);
 		dot_prod += (results[0] + results[1] + results[2] + results[3]);
+		//printf("%f",dot_prod);
 		while(current < mat1->cols){
-		    dot_prod += mat1_array[y][current] * mat2_array[x][current];
+		    dot_prod += mat1->data[y*mat1->cols+current] * transposed->data[x*transposed->cols+current];
 		    current++;
 		}
 		//printf("%f",dot_prod);
@@ -319,6 +300,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 	}
     }
     }
+    deallocate_matrix(transposed);
     return 0;
 }
 
@@ -364,8 +346,10 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 	}
     }
     }
-    for(int i = current;i<pow;i++){
-	mul_matrix(temp_mat,mat,result);
+    matrix *tail_mat;
+    allocate_matrix(&tail_mat,result->cols,result->rows);
+    pow_matrix(tail_mat,mat,pow-current);
+    mul_matrix(temp_mat,result,tail_mat);
 #pragma omp parallel
 	{
 #pragma omp for
@@ -373,7 +357,10 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 	    result->data[j] = temp_mat->data[j];
 	}
 	}
+    for(int i = 0; i < result->rows * result->cols; i++){
+	printf("%f",result->data[i]);
     }
     free(temp_mat);
+    free(tail_mat);
     return 0;
 }
