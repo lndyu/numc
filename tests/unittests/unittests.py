@@ -101,8 +101,8 @@ class TestMul(TestCase):
 class TestPow(TestCase):
     def test_small_pow(self):
         # TODO: YOUR CODE HERE
-        dp_mat, nc_mat = rand_dp_nc_matrix(2, 2, seed=0)
-        is_correct, speed_up = compute([dp_mat, 50], [nc_mat, 50], "pow")
+        dp_mat, nc_mat = rand_dp_nc_matrix(16, 16, seed=0)
+        is_correct, speed_up = compute([dp_mat, 100], [nc_mat, 100], "pow")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 

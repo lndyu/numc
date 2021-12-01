@@ -278,14 +278,23 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 		__m256d products = _mm256_set1_pd(0.0);
 		double dot_prod = 0;
 		int current = 0;
-		__m256d m1;
-		__m256d m2;
-		while(current + 4 < mat1->cols){
-		    m1 = _mm256_loadu_pd(mat1->data + y*mat1->cols + current);
-		    m2 = _mm256_loadu_pd(transposed->data + x*transposed->cols + current);
-		    products = _mm256_fmadd_pd(m1,m2,products);
+		__m256d m1_1, m1_2, m1_3, m1_4;
+		__m256d m2_1, m2_2, m2_3, m2_4;
+		while(current + 16 < mat1->cols){
+		    m1_1 = _mm256_loadu_pd(mat1->data + y*mat1->cols + current);
+		    m1_2 = _mm256_loadu_pd(mat1->data + y*mat1->cols + current + 4);
+		    m1_3 = _mm256_loadu_pd(mat1->data + y*mat1->cols + current + 8);
+		    m1_4 = _mm256_loadu_pd(mat1->data + y*mat1->cols + current + 12);
+		    m2_1 = _mm256_loadu_pd(transposed->data + x*transposed->cols + current);
+		    m2_2 = _mm256_loadu_pd(transposed->data + x*transposed->cols + current + 4);
+		    m2_3 = _mm256_loadu_pd(transposed->data + x*transposed->cols + current + 8);
+		    m2_4 = _mm256_loadu_pd(transposed->data + x*transposed->cols + current + 12);
+		    products = _mm256_fmadd_pd(m1_1,m2_1,products);
+		    products = _mm256_fmadd_pd(m1_2,m2_2,products);
+		    products = _mm256_fmadd_pd(m1_3,m2_3,products);
+		    products = _mm256_fmadd_pd(m1_4,m2_4,products);
 		    //printf("simd used");
-		    current += 4;
+		    current += 16;
 		}
 		double results[4];
 		_mm256_storeu_pd(results,products);
@@ -357,10 +366,7 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
 	    result->data[j] = temp_mat->data[j];
 	}
 	}
-    for(int i = 0; i < result->rows * result->cols; i++){
-	printf("%f",result->data[i]);
-    }
-    free(temp_mat);
-    free(tail_mat);
+    deallocate_matrix(temp_mat);
+    deallocate_matrix(tail_mat);
     return 0;
 }
